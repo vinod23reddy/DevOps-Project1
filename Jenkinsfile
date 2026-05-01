@@ -7,10 +7,10 @@ pipeline {
         jdk 'Java21'
     }
     environment {
-    DOCKER_USERNAME = 'vinod23reddy'
-    IMAGE_NAME      = 'DevOps-Project1'
-    IMAGE_TAG       = "${env.BUILD_NUMBER}"
-    DOCKER_CREDS    = credentials('Dockerhub')
+        DOCKER_USERNAME = 'vinod23reddy'
+        IMAGE_NAME      = 'devops-project1'
+        IMAGE_TAG       = "${env.BUILD_NUMBER}"
+        DOCKER_CREDS    = credentials('Dockerhub')
     }
     stages {
         stage('Clean Workspace') {
@@ -35,12 +35,11 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube-server') { 
+                withSonarQubeEnv('sonarqube-server') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
-<<<<<<< HEAD
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .'
@@ -50,11 +49,11 @@ pipeline {
             steps {
                 sh 'echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin'
                 sh 'docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
-=======
+            }
+        }
         stage('Quality Gate') {
             steps {
                 waitForQualityGate abortPipeline: true
->>>>>>> 39f66653590fd7277e88e2ad2752708538d0240e
             }
         }
     }
