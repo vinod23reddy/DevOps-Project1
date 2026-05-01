@@ -6,6 +6,12 @@ pipeline {
         maven 'Maven3'
         jdk 'Java21'
     }
+    environment {
+    DOCKER_USERNAME = 'vinod23reddy'
+    IMAGE_NAME      = 'DevOps-Project1'
+    IMAGE_TAG       = "${env.BUILD_NUMBER}"
+    DOCKER_CREDS    = credentials('Dockerhub')
+    }
     stages {
         stage('Clean Workspace') {
             steps {
@@ -32,6 +38,17 @@ pipeline {
                 withSonarQubeEnv('sonarqube-server') { 
                     sh 'mvn sonar:sonar'
                 }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .'
+            }
+        }
+        stage('Docker Push') {
+            steps {
+                sh 'echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin'
+                sh 'docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
     }
