@@ -40,6 +40,7 @@ pipeline {
                 }
             }
         }
+<<<<<<< HEAD
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .'
@@ -49,6 +50,11 @@ pipeline {
             steps {
                 sh 'echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin'
                 sh 'docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
+=======
+        stage('Quality Gate') {
+            steps {
+                waitForQualityGate abortPipeline: true
+>>>>>>> 39f66653590fd7277e88e2ad2752708538d0240e
             }
         }
     }
