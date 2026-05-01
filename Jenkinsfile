@@ -48,12 +48,25 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh 'docker tag ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USERNAME}/${IMAGE_NAME}:latest'
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
         stage('Docker Push') {
             steps {
                 sh 'echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin'
                 sh 'docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
+                sh 'docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:latest'
+            }
+        }
+        stage('Cleanup Artifacts') {
+            steps {
+                sh 'docker rmi ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
+                sh 'docker rmi ${DOCKER_USERNAME}/${IMAGE_NAME}:latest'
             }
         }
     }
