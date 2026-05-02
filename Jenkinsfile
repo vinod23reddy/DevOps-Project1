@@ -2,13 +2,9 @@ pipeline {
     agent {
         label 'Jenkins-Agent'
     }
-    tools {
-        maven 'Maven3'
-        jdk 'Java21'
-    }
     environment {
         DOCKER_USERNAME = 'vinod23reddy'
-        IMAGE_NAME      = 'devops-project1'
+        IMAGE_NAME      = 'food-zone-app'
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
         DOCKER_CREDS    = credentials('Dockerhub')
     }
@@ -20,29 +16,35 @@ pipeline {
         }
         stage('Checkout SCM') {
             steps {
-                git url: 'https://github.com/vinod23reddy/DevOps-Project1.git', branch: 'main', credentialsId: 'github'
+                git url: 'https://github.com/vinod23reddy/FoodZone.git', branch: 'main', credentialsId: 'github'
             }
         }
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                sh 'mvn clean package'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'mvn test'
+                sh 'npm install'
             }
         }
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube-server') {
-                    sh 'mvn sonar:sonar'
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=food-zone-app \
+                          -Dsonar.sources=src \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
                 }
             }
         }
         stage('Quality Gate') {
             steps {
                 waitForQualityGate abortPipeline: true
+            }
+        }
+        stage('Fetch Dockerfile') {
+            steps {
+                sh 'curl -o Dockerfile https://raw.githubusercontent.com/vinod23reddy/CI-CD/master/Dockerfile'
             }
         }
         stage('Docker Build') {
