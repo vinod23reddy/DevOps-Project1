@@ -6,7 +6,7 @@ pipeline {
         DOCKER_USERNAME = 'vinod23reddy'
         IMAGE_NAME      = 'food-zone-app'
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
-        BOOTSTRAP_HOST  = '<your-bootstrap-private-ip>'
+        BOOTSTRAP_HOST  = '172.31.18.245'
     }
     stages {
         stage('Checkout K8s Manifests') {
