@@ -6,7 +6,7 @@ metadata:
   labels:
     app: food-zone-app
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: food-zone-app
