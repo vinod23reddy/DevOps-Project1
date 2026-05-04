@@ -1,0 +1,40 @@
+pipeline {
+    agent {
+        label 'Jenkins-Agent'
+    }
+    environment {
+        DOCKER_USERNAME = 'vinod23reddy'
+        IMAGE_NAME      = 'food-zone-app'
+        IMAGE_TAG       = "${env.BUILD_NUMBER}"
+        BOOTSTRAP_HOST  = '<your-bootstrap-private-ip>'
+    }
+    stages {
+        stage('Checkout K8s Manifests') {
+            steps {
+                git url: 'https://github.com/vinod23reddy/CI-CD.git', branch: 'master', credentialsId: 'github'
+            }
+        }
+        stage('Deploy to Minikube') {
+            steps {
+                sshagent(credentials: ['bootstrap-ssh']) {
+                    sh '''
+                        scp -o StrictHostKeyChecking=no k8s/deployment.yaml ubuntu@${BOOTSTRAP_HOST}:/home/ubuntu/k8s/deployment.yaml
+                        ssh -o StrictHostKeyChecking=no ubuntu@${BOOTSTRAP_HOST} "kubectl apply -f /home/ubuntu/k8s/deployment.yaml"
+                        ssh -o StrictHostKeyChecking=no ubuntu@${BOOTSTRAP_HOST} "kubectl apply -f /home/ubuntu/k8s/service.yaml"
+                        ssh -o StrictHostKeyChecking=no ubuntu@${BOOTSTRAP_HOST} "kubectl rollout status deployment/food-zone-app"
+                    '''
+                }
+            }
+        }
+        stage('Verify Deployment') {
+            steps {
+                sshagent(credentials: ['bootstrap-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${BOOTSTRAP_HOST} "kubectl get pods"
+                        ssh -o StrictHostKeyChecking=no ubuntu@${BOOTSTRAP_HOST} "kubectl get svc"
+                    '''
+                }
+            }
+        }
+    }
+}
