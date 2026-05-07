@@ -72,4 +72,9 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            build job: 'CD Pipeline', wait: false
+        }
+    }
 }
